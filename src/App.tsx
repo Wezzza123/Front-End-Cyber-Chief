@@ -1,0 +1,51 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import UrlShallowScan from "./pages/UrlShallowScan";
+import EmailCheck from "./pages/EmailCheck";
+import PasswordCheck from "./pages/PasswordCheck";
+import FileUpload from "./pages/FileUpload";
+import SubmitUrl from "./pages/SubmitUrl";
+import ApiAccess from "./pages/ApiAccess";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/url-shallow" element={<UrlShallowScan />} />
+          <Route path="/url-deep" element={<SubmitUrl />} />
+          <Route path="/email-check" element={<EmailCheck />} />
+          <Route path="/password-check" element={<PasswordCheck />} />
+          <Route path="/file-upload" element={<FileUpload />} />
+          <Route path="/scan-container" element={<SubmitUrl />} />
+          <Route path="/scan-website" element={<SubmitUrl />} />
+          <Route path="/api-access" element={<ApiAccess />} />
+          <Route path="/wallets" element={<Dashboard />} />
+          <Route path="/about" element={<Dashboard />} />
+          <Route path="/accounts" element={<Dashboard />} />
+          <Route path="/settings" element={<Dashboard />} />
+          <Route path="/contact" element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;

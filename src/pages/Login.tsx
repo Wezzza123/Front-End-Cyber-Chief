@@ -1,0 +1,123 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import CyberLogo from "@/components/CyberLogo";
+import { toast } from "@/hooks/use-toast";
+
+const Login = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
+
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    setIsEmailValid(validateEmail(value));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isEmailValid || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields correctly",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "Success",
+      description: "Logged in successfully!",
+    });
+    navigate("/dashboard");
+  };
+
+  return (
+    <div className="min-h-screen flex">
+      {/* Left side - Login Form */}
+      <div className="flex-1 bg-card flex items-center justify-center p-8 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 gradient-mesh opacity-50" />
+        
+        <div className="w-full max-w-md relative z-10 animate-slide-in">
+          <h2 className="text-4xl font-bold text-foreground mb-12 text-center">
+            Login
+          </h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Input */}
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={handleEmailChange}
+                className="cyber-input pl-12 pr-12"
+              />
+              {isEmailValid && (
+                <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+              )}
+            </div>
+
+            {/* Password Input */}
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="cyber-input pl-12 pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Forgot Password */}
+            <div className="text-left">
+              <Link to="/forgot-password" className="text-primary hover:text-primary/80 text-sm transition-colors">
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Login Button */}
+            <Button type="submit" variant="cyber-white" size="lg" className="w-full">
+              Log in
+            </Button>
+          </form>
+        </div>
+      </div>
+
+      {/* Right side - Sign Up CTA */}
+      <div className="hidden lg:flex flex-1 bg-white items-center justify-center p-8">
+        <div className="text-center animate-slide-in">
+          <div className="text-gray-900 mb-8">
+            <CyberLogo size="lg" />
+          </div>
+          
+          <Link to="/signup">
+            <Button variant="cyber-dark" size="lg" className="w-48">
+              Sign up
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
