@@ -4,6 +4,7 @@ import { Mail, Lock, Eye, EyeOff, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { toast } from "@/hooks/use-toast";
+import { login } from "@/lib/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Login = () => {
     setIsEmailValid(validateEmail(value));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isEmailValid || !password) {
       toast({
@@ -33,11 +34,30 @@ const Login = () => {
       });
       return;
     }
-    toast({
-      title: "Success",
-      description: "Logged in successfully!",
-    });
-    navigate("/dashboard");
+
+    try {
+      const res = await login(email, password);
+
+      const message = res?.data?.message;
+
+      // If API responded but not ok, show message
+      if (!res?.ok) {
+        toast({ title: "Login failed", description: message || "Invalid email or password.", variant: "destructive" });
+        return;
+      }
+
+      const token = res?.data?.token || null;
+      if (!token) {
+        toast({ title: "Login failed", description: message || "Invalid email or password.", variant: "destructive" });
+        return;
+      }
+
+      localStorage.setItem("auth_token", token);
+      toast({ title: "Success", description: message || "Logged in" });
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast({ title: "Login failed", description: err?.message || "Invalid credentials", variant: "destructive" });
+    }
   };
 
   return (

@@ -4,18 +4,20 @@ import { Eye, EyeOff, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { toast } from "@/hooks/use-toast";
+import { register } from "@/lib/api";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -31,11 +33,23 @@ const Signup = () => {
       });
       return;
     }
-    toast({
-      title: "Success",
-      description: "Account created successfully!",
-    });
-    navigate("/dashboard");
+    try {
+      const res = await register(firstName, lastName, email, password);
+
+      const message: string | undefined = res?.data?.message;
+
+      // If backend indicates email already exists, show destructive toast and stop
+      if (message && message.toLowerCase().includes("already")) {
+        toast({ title: "Registration failed", description: message, variant: "destructive" });
+        return;
+      }
+
+      // Otherwise assume registration succeeded and user must confirm email
+      toast({ title: "Success", description: message || "Registration successful. Check your email." });
+      navigate("/login");
+    } catch (err: any) {
+      toast({ title: "Registration failed", description: err?.message || "Something went wrong", variant: "destructive" });
+    }
   };
 
   return (
@@ -51,18 +65,28 @@ const Signup = () => {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Full Name */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-2">
-                Your fullname*
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="cyber-input"
-              />
+            {/* First & Last Name */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-sm text-muted-foreground mb-2">First name*</label>
+                <input
+                  type="text"
+                  placeholder="First name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="cyber-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-muted-foreground mb-2">Last name*</label>
+                <input
+                  type="text"
+                  placeholder="Last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="cyber-input"
+                />
+              </div>
             </div>
 
             {/* Email */}

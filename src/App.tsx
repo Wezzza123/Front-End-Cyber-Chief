@@ -13,6 +13,8 @@ import PasswordCheck from "./pages/PasswordCheck";
 import FileUpload from "./pages/FileUpload";
 import SubmitUrl from "./pages/SubmitUrl";
 import ApiAccess from "./pages/ApiAccess";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/url-shallow" element={<UrlShallowScan />} />
           <Route path="/url-deep" element={<SubmitUrl />} />
           <Route path="/email-check" element={<EmailCheck />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/password-check" element={<PasswordCheck />} />
           <Route path="/file-upload" element={<FileUpload />} />
           <Route path="/scan-container" element={<SubmitUrl />} />
