@@ -206,6 +206,247 @@ export async function urlExpanderMyHistory(token: string) {
   return { status: res.status, ok: res.ok, data };
 }
 
+/** --- Triage (deep URL analysis) --- */
+
+export type TriageSubmitUrlResponse = {
+  success?: boolean;
+  message?: string;
+  sampleId?: string;
+  alreadyCached?: boolean;
+  analysis?: { score?: number; tags?: string[] };
+  sample?: { id?: string; target?: string; score?: number; created?: string; completed?: string };
+  signatures?: unknown;
+  build?: string;
+};
+
+export type TriageSampleStatusResponse = {
+  success?: boolean;
+  sampleId?: string;
+  status?: string;
+  score?: number;
+  message?: string;
+};
+
+export type TriageOverviewResponse = {
+  success?: boolean;
+  sampleId?: string;
+  score?: number;
+  severity?: string;
+  target?: string;
+  tags?: string[];
+  highRiskSignatures?: { name: string; score: number; description?: string }[];
+  message?: string;
+};
+
+export type TriageHistoryScan = {
+  url: string;
+  sampleId: string;
+  status: string;
+  score?: number;
+  severity?: string;
+  scannedAt: string;
+};
+
+export function triageExtractSampleId(data: unknown): string | null {
+  if (!data || typeof data !== "object") return null;
+  const o = data as Record<string, unknown>;
+  if (typeof o.sampleId === "string") return o.sampleId;
+  const s = o.sample;
+  if (s && typeof s === "object" && s !== null && "id" in s) {
+    return String((s as { id: unknown }).id);
+  }
+  return null;
+}
+
+/** POST /api/Triage/url?url= — Bearer required */
+export async function triageSubmitUrl(targetUrl: string, token: string) {
+  const url = `${BASE_URL}/api/Triage/url?url=${encodeURIComponent(targetUrl)}`;
+  const res = await fetch(url, { method: "POST", headers: { ...authHeaders(token) } });
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? ((await res.json()) as TriageSubmitUrlResponse)
+    : null;
+  return { status: res.status, ok: res.ok, data };
+}
+
+/** GET /api/Triage/sample/{id} — no auth */
+export async function triageSampleStatus(sampleId: string) {
+  const res = await fetch(`${BASE_URL}/api/Triage/sample/${encodeURIComponent(sampleId)}`);
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? ((await res.json()) as TriageSampleStatusResponse)
+    : null;
+  return { status: res.status, ok: res.ok, data };
+}
+
+/** GET /api/Triage/sample/{id}/overview — no auth */
+export async function triageSampleOverview(sampleId: string) {
+  const res = await fetch(`${BASE_URL}/api/Triage/sample/${encodeURIComponent(sampleId)}/overview`);
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? ((await res.json()) as TriageOverviewResponse)
+    : null;
+  return { status: res.status, ok: res.ok, data };
+}
+
+/** GET /api/Triage/my-history — Bearer required */
+export async function triageMyHistory(token: string) {
+  const res = await fetch(`${BASE_URL}/api/Triage/my-history`, {
+    headers: { ...authHeaders(token) },
+  });
+  const contentType = res.headers.get("content-type") || "";
+  let scans: TriageHistoryScan[] = [];
+  if (contentType.includes("application/json")) {
+    const raw = (await res.json()) as { scans?: TriageHistoryScan[] };
+    scans = Array.isArray(raw.scans) ? raw.scans : [];
+  }
+  return { status: res.status, ok: res.ok, data: scans };
+}
+
+export type TriageReportView = {
+  sampleId: string;
+  target?: string;
+  score?: number;
+  severity?: string;
+  tags?: string[];
+  signatures: { name: string; score?: number; description?: string }[];
+};
+
+/** --- Container scanning API --- */
+export type ContainerStartScanBody = {
+  image: string;
+  tag?: string | null;
+  source?: string | null;
+  dockerImageId?: string | null;
+  repositoryId?: string | null;
+};
+
+export type ContainerStartScanResponse = {
+  message?: string;
+  imageName?: string;
+  status?: string;
+  progress?: number;
+  id?: string;
+  summaryId?: string;
+};
+
+export async function containerStartScan(body: ContainerStartScanBody, token: string) {
+  const res = await fetch(`${BASE_URL}/api/Container/start-scan`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json") ? await res.json() : null;
+  return { status: res.status, ok: res.ok, data } as { status: number; ok: boolean; data: ContainerStartScanResponse | null };
+}
+
+export type ContainerHistoryItem = {
+  id?: string;
+  name?: string; // image name
+  tag?: string | null;
+  status?: string;
+  progres?: number | null; // sometimes spelled progres/progress
+  progress?: number | null;
+  summaryId?: string | null;
+};
+
+export async function containerHistory(token: string) {
+  const res = await fetch(`${BASE_URL}/api/Container/my-history`, {
+    headers: { ...authHeaders(token) },
+  });
+  const contentType = res.headers.get("content-type") || "";
+  let data: ContainerHistoryItem[] = [];
+  if (contentType.includes("application/json")) {
+    const raw = await res.json();
+    data = Array.isArray(raw) ? raw : raw?.data ?? [];
+  }
+  return { status: res.status, ok: res.ok, data } as { status: number; ok: boolean; data: ContainerHistoryItem[] };
+}
+
+export type ImageSummary = {
+  id?: string;
+  imageName?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  totalVulnerabilities?: number;
+  criticalVulnerabilities?: number;
+  highetVulnerabilities?: number;
+  mediumVulnerabilities?: number;
+  lowetVulnerabilities?: number;
+  vulnerabilities?: Array<Record<string, unknown>>;
+};
+
+export async function containerImageSummary(imageName: string, token: string) {
+  const url = `${BASE_URL}/api/Container/image-summary?imagename=${encodeURIComponent(imageName)}`;
+  const res = await fetch(url, { headers: { ...authHeaders(token) } });
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json") ? await res.json() : null;
+  return { status: res.status, ok: res.ok, data } as { status: number; ok: boolean; data: ImageSummary | null };
+}
+
+/** Normalize POST body when API returns full analysis (alternate response shape). */
+export function triageReportFromSubmitPayload(data: unknown): TriageReportView | null {
+  if (!data || typeof data !== "object") return null;
+  const o = data as TriageSubmitUrlResponse;
+  const sampleId = triageExtractSampleId(data);
+  if (!sampleId) return null;
+  const analysis = o.analysis;
+  const sample = o.sample;
+  const sigs = o.signatures;
+  const names: { name: string; score?: number; description?: string }[] = [];
+  if (Array.isArray(sigs)) {
+    for (const s of sigs) {
+      if (typeof s === "string") {
+        names.push({ name: s });
+        continue;
+      }
+      if (s && typeof s === "object") {
+        const x = s as Record<string, unknown>;
+        const name = String(x.name ?? x.label ?? x.title ?? "Signature");
+        names.push({
+          name,
+          score: typeof x.score === "number" ? x.score : undefined,
+          description:
+            typeof x.description === "string"
+              ? x.description
+              : typeof x.desc === "string"
+                ? x.desc
+                : undefined,
+        });
+      }
+    }
+  }
+  const hasAnalysis = Boolean(analysis && (analysis.score != null || (analysis.tags && analysis.tags.length)));
+  const hasSample = Boolean(sample && (sample.target || sample.score != null));
+  if (!hasAnalysis && !hasSample && names.length === 0) return null;
+  return {
+    sampleId,
+    target: sample?.target,
+    score: analysis?.score ?? sample?.score,
+    severity: undefined,
+    tags: analysis?.tags,
+    signatures: names,
+  };
+}
+
+export function triageReportFromOverview(data: TriageOverviewResponse | null, sampleId: string): TriageReportView | null {
+  if (!data) return null;
+  const sigs = data.highRiskSignatures ?? [];
+  return {
+    sampleId: data.sampleId ?? sampleId,
+    target: data.target,
+    score: data.score,
+    severity: data.severity,
+    tags: data.tags,
+    signatures: sigs.map((s) => ({
+      name: s.name,
+      score: s.score,
+      description: s.description,
+    })),
+  };
+}
+
 export const API = {
   BASE_URL,
   register,
@@ -219,6 +460,13 @@ export const API = {
   webScanReport,
   urlExpanderExtract,
   urlExpanderMyHistory,
+  triageSubmitUrl,
+  triageSampleStatus,
+  triageSampleOverview,
+  triageMyHistory,
+  containerStartScan,
+  containerHistory,
+  containerImageSummary,
 };
 
 export default API;

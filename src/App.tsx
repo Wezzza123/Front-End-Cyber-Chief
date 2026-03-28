@@ -12,6 +12,7 @@ import EmailCheck from "./pages/EmailCheck";
 import PasswordCheck from "./pages/PasswordCheck";
 import FileUpload from "./pages/FileUpload";
 import SubmitUrl from "./pages/SubmitUrl";
+import ScanContainer from "./pages/ScanContainer";
 import ScanWebsite from "./pages/ScanWebsite";
 import ApiAccess from "./pages/ApiAccess";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -38,7 +39,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/password-check" element={<PasswordCheck />} />
           <Route path="/file-upload" element={<FileUpload />} />
-          <Route path="/scan-container" element={<SubmitUrl />} />
+          <Route path="/scan-container" element={<ScanContainer />} />
           <Route path="/scan-website" element={<ScanWebsite />} />
           <Route path="/api-access" element={<ApiAccess />} />
           <Route path="/wallets" element={<Dashboard />} />
