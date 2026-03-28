@@ -13,8 +13,7 @@ const SubmitUrl = () => {
 
   const handleSubmit = () => {
     if (!url) return;
-    
-    // Mock result
+
     setResult({
       score: 10,
       threatLevel: "known bad",
@@ -31,24 +30,25 @@ const SubmitUrl = () => {
     <DashboardLayout>
       <div className="p-8 gradient-mesh min-h-full">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-4">Submit URL</h1>
-          
+          <h1 className="text-3xl font-bold mb-4">URL Deep Scanning</h1>
+
           <div className="mb-8 space-y-2">
             <p>
-              <span className="text-primary font-medium">Analyze</span> : this is to be directly analyze a URI that will be open in the browser.
+              <span className="text-primary font-medium">Analyze</span> : this is to be directly analyze a URI that
+              will be open in the browser.
             </p>
             <p>
               <span className="text-primary font-medium">Sitch</span> : execut the URL in the sendbox.
             </p>
           </div>
 
-          {/* URL Input */}
           <div className="flex gap-2 mb-8">
             <input
               type="url"
               placeholder="Enter URL"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               className="cyber-input-white flex-1"
             />
             <Button variant="cyber" size="icon" onClick={handleSubmit} className="w-12 h-12">
@@ -58,7 +58,6 @@ const SubmitUrl = () => {
 
           {result && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-in">
-              {/* Score Card */}
               <div className="bg-card border border-border rounded-xl p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-semibold mb-2">Score</h3>
@@ -69,7 +68,6 @@ const SubmitUrl = () => {
                 </div>
               </div>
 
-              {/* Activities */}
               <div className="cyber-card-white">
                 <h3 className="text-xl font-semibold mb-4">
                   <span className="text-primary">Malicious</span> activity summary
