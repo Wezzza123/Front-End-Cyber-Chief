@@ -43,7 +43,7 @@ const Index = () => {
               analyze files, and protect your digital presence.
             </p>
             <div className="flex items-center justify-center">
-              <Link to="/dashboard">
+              <Link to="/login">
                 <Button variant="outline" size="xl">
                   View Dash Board
                 </Button>

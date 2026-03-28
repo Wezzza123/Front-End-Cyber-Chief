@@ -1,4 +1,4 @@
-const BASE_URL = "http://147.93.55.224:8181";
+const BASE_URL = "https://api.cybershield.tecisfun.cloud";
 
 async function post(path: string, body: any) {
   const res = await fetch(`${BASE_URL}${path}`, {
