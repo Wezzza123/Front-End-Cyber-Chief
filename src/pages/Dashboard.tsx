@@ -1,7 +1,9 @@
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { dashboardAllScannedUrls, type DashboardScannedUrlItem } from "@/lib/api";
 
 const userServices = [
   { label: "URL shallow scanning", path: "/url-shallow" },
@@ -24,14 +26,44 @@ const limits = [
   { label: "Vehicle", value: 786.779, progress: 79 },
 ];
 
-const recentUrls = [
-  { url: "https://www.microsoft.com/en-us/microsoft-365/outlook/email-and-cal", score: 10 },
-  { url: "https://www.microsoft.com/en-us/microsoft-365/outlook/email-and-cal", score: 10 },
-  { url: "https://www.microsoft.com/en-us/microsoft-365/outlook/email-and-cal", score: 10 },
-  { url: "https://www.microsoft.com/en-us/microsoft-365/outlook/email-and-cal", score: 10 },
-];
+/** Score 1 → green, 10 → red (linear hue). Values outside 1–10 are clamped. */
+function scoreBadgeStyle(score: number): CSSProperties {
+  const clamped = Math.min(10, Math.max(1, score));
+  const t = (clamped - 1) / 9;
+  const hue = Math.round(120 * (1 - t));
+  return {
+    backgroundColor: `hsl(${hue} 72% 38%)`,
+    color: "hsl(0 0% 98%)",
+  };
+}
 
 const Dashboard = () => {
+  const [recentUrls, setRecentUrls] = useState<DashboardScannedUrlItem[]>([]);
+  const [recentLoading, setRecentLoading] = useState(true);
+  const [recentError, setRecentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setRecentLoading(true);
+      setRecentError(null);
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      const { ok, data, status } = await dashboardAllScannedUrls(token);
+      if (cancelled) return;
+      if (!ok) {
+        setRecentError(`Could not load recent URLs (${status}).`);
+        setRecentUrls([]);
+      } else {
+        setRecentUrls(data);
+      }
+      setRecentLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="p-8 gradient-mesh min-h-full relative">
@@ -94,21 +126,32 @@ const Dashboard = () => {
           {/* Recent Checked URLs */}
           <div className="cyber-card">
             <h3 className="text-lg font-semibold mb-6">Recent Checked URLs</h3>
-            <div className="space-y-3">
-              {recentUrls.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg min-h-12"
-                >
-                  <span className="text-sm text-muted-foreground truncate flex-1 mr-4">
-                    {item.url}
-                  </span>
-                  <span className="px-4 py-1 bg-primary text-primary-foreground rounded-full text-sm font-medium">
-                    {item.score}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {recentLoading ? (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            ) : recentError ? (
+              <p className="text-sm text-destructive">{recentError}</p>
+            ) : recentUrls.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No scanned URLs yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {recentUrls.map((item, index) => (
+                  <div
+                    key={`${item.url}-${index}`}
+                    className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg min-h-12"
+                  >
+                    <span className="text-sm text-muted-foreground truncate flex-1 mr-4">
+                      {item.url}
+                    </span>
+                    <span
+                      className="px-4 py-1 rounded-full text-sm font-medium tabular-nums shrink-0"
+                      style={scoreBadgeStyle(item.score)}
+                    >
+                      {item.score}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

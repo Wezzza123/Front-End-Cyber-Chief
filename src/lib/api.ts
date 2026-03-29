@@ -1,5 +1,28 @@
 const BASE_URL = "https://api.cybershield.tecisfun.cloud";
 
+export type DashboardScannedUrlItem = {
+  url: string;
+  score: number;
+};
+
+/** GET /api/Dashboard/all-scanned-urls — recent URL checks with scores */
+export async function dashboardAllScannedUrls(token?: string | null) {
+  const headers: HeadersInit = { Accept: "*/*" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}/api/Dashboard/all-scanned-urls`, { headers });
+  const contentType = res.headers.get("content-type") || "";
+  let data: DashboardScannedUrlItem[] = [];
+  if (contentType.includes("application/json")) {
+    const raw = await res.json();
+    data = Array.isArray(raw)
+      ? (raw as DashboardScannedUrlItem[]).filter(
+          (row) => typeof row?.url === "string" && typeof row?.score === "number"
+        )
+      : [];
+  }
+  return { status: res.status, ok: res.ok, data };
+}
+
 async function post(path: string, body: any) {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
@@ -449,6 +472,7 @@ export function triageReportFromOverview(data: TriageOverviewResponse | null, sa
 
 export const API = {
   BASE_URL,
+  dashboardAllScannedUrls,
   register,
   login,
   forgotPassword,
