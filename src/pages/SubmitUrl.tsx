@@ -267,33 +267,39 @@ const SubmitUrl = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-8 gradient-mesh min-h-full">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">URL Deep Scanning</h1>
+      <div className="p-4 sm:p-8 gradient-mesh min-h-full">
+        <div className="max-w-xl sm:max-w-4xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">URL Deep Scanning</h1>
           <p className="text-muted-foreground mb-8 max-w-2xl">
             Triage analysis: behavioral score, severity, and notable signatures. Sign in required. Tap a past scan in
             your history to open its report in a pop-up.
           </p>
 
-          <div className="flex gap-2 mb-6">
+          <div className="flex flex-col sm:flex-row gap-2 mb-6">
             <input
               type="url"
               placeholder="https://example.com"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && void handleSubmit()}
-              className="cyber-input-white flex-1"
+              className="cyber-input-white flex-1 h-12 rounded-lg px-4"
               disabled={submitting}
             />
             <Button
               variant="cyber"
-              size="icon"
               onClick={() => void handleSubmit()}
-              className="w-12 h-12 shrink-0"
+              className="w-full sm:w-12 h-12 shrink-0"
               disabled={submitting}
               aria-label="Analyze URL"
             >
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <span className="inline sm:hidden">Analyze</span>
+                  <ArrowRight className="w-5 h-5 hidden sm:inline" />
+                </>
+              )}
             </Button>
           </div>
 
@@ -329,7 +335,7 @@ const SubmitUrl = () => {
                         type="button"
                         onClick={() => void openHistoryReport(row)}
                         disabled={openingSampleId === row.sampleId}
-                        className={`w-full text-left p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 transition-colors border ${
+                        className={`w-full text-left p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 transition-colors border ${
                           selected
                             ? "bg-primary/10 border-primary/40 ring-1 ring-primary/30"
                             : "bg-secondary/50 border-transparent hover:bg-secondary hover:border-border"
@@ -366,7 +372,7 @@ const SubmitUrl = () => {
               if (!open) setReport(null);
             }}
           >
-            <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-4xl overflow-y-auto p-6 gap-4 sm:max-w-4xl">
+            <DialogContent className="max-h-[90vh] w-screen h-screen sm:w-[calc(100vw-2rem)] sm:h-auto sm:max-w-4xl overflow-y-auto p-6 gap-4">
               {report ? (
                 <>
                   <DialogHeader className="text-left">
@@ -434,6 +440,13 @@ const SubmitUrl = () => {
               ) : null}
             </DialogContent>
           </Dialog>
+        </div>
+
+        {/* Mobile sticky action */}
+        <div className="fixed bottom-4 left-4 right-4 sm:hidden z-50">
+          <Button variant="cyber" onClick={() => void handleSubmit()} className="w-full h-12" disabled={submitting}>
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Analyze"}
+          </Button>
         </div>
       </div>
     </DashboardLayout>
