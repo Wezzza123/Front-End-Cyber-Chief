@@ -27,7 +27,9 @@ const ForgotPassword = () => {
         // Let user know
         return;
       }
-      navigate("/reset-password");
+      // The reset-password page expects `?email=...&token=...` from the email link.
+      // So after requesting a reset email, we send the user back to login.
+      navigate("/login");
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Unable to send reset email", variant: "destructive" });
     } finally {
