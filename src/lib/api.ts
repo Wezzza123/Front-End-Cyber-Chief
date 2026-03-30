@@ -1,4 +1,5 @@
 const BASE_URL = "https://api.cybershield.tecisfun.cloud";
+const AUTH_BASE_URL = "https://cybershield.tecisfun.cloud";
 
 export type DashboardScannedUrlItem = {
   url: string;
@@ -54,6 +55,40 @@ export async function forgotPassword(email: string) {
 
 export async function resetPassword(email: string, token: string, newPassword: string) {
   return post("/api/Auth/reset-password", { email, token, newPassword });
+}
+
+export type ConfirmEmailResponse = {
+  message?: string;
+  success?: boolean;
+};
+
+/** GET /api/auth/confirm-email?userId=...&token=... (no auth header, no body) */
+export async function confirmEmail(userId: string, token: string) {
+  const url = `${AUTH_BASE_URL}/api/auth/confirm-email?userId=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}`;
+  const headers: HeadersInit = { Accept: "*/*" };
+  const res = await fetch(url, { method: "GET", headers });
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? ((await res.json()) as ConfirmEmailResponse)
+    : null;
+  return { status: res.status, ok: res.ok, data };
+}
+
+export type ValidateResetTokenResponse = {
+  message?: string;
+  success?: boolean;
+};
+
+/** GET /api/auth/validate-reset-token?email=...&token=... (no auth header needed) */
+export async function validateResetToken(email: string, token: string) {
+  const url = `${AUTH_BASE_URL}/api/auth/validate-reset-token?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`;
+  const headers: HeadersInit = { Accept: "*/*" };
+  const res = await fetch(url, { method: "GET", headers });
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? ((await res.json()) as ValidateResetTokenResponse)
+    : null;
+  return { status: res.status, ok: res.ok, data };
 }
 
 // Request OTP for email (endpoint expects email as query param; using POST with query)
@@ -477,6 +512,8 @@ export const API = {
   login,
   forgotPassword,
   resetPassword,
+  confirmEmail,
+  validateResetToken,
   inspectPassword,
   webScanStart,
   webScanHistory,

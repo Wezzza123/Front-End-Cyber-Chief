@@ -1,17 +1,60 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { toast } from "@/hooks/use-toast";
-import { login } from "@/lib/api";
+import { confirmEmail, login } from "@/lib/api";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
+
+  const userId = searchParams.get("userId");
+  const token = searchParams.get("token");
+
+  useEffect(() => {
+    if (!userId || !token) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await confirmEmail(userId, token);
+        if (cancelled) return;
+
+        const message = res?.data?.message;
+        if (!res?.ok) {
+          toast({
+            title: "Email confirmation failed",
+            description: message || "Invalid or expired token.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Success",
+          description: message || "Email confirmed. Please log in.",
+        });
+        navigate("/login", { replace: true });
+      } catch (err: any) {
+        if (cancelled) return;
+        toast({
+          title: "Email confirmation failed",
+          description: err?.message || "Unable to confirm email.",
+          variant: "destructive",
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, token, userId]);
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
