@@ -47,7 +47,7 @@ const CyberLogo = ({ size = "md", showText = true }: CyberLogoProps) => {
       
       {showText && (
         <h1 className={`${textSizes[size]} font-bold tracking-wider`}>
-          CYBER BRIEF
+          CYBER SHIELD
         </h1>
       )}
     </div>

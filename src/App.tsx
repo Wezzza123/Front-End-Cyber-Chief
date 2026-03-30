@@ -1,5 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -17,6 +15,8 @@ import ScanWebsite from "./pages/ScanWebsite";
 import ApiAccess from "./pages/ApiAccess";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import AboutUs from "./pages/AboutUs";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,8 +24,6 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -42,11 +40,11 @@ const App = () => (
           <Route path="/scan-container" element={<ScanContainer />} />
           <Route path="/scan-website" element={<ScanWebsite />} />
           <Route path="/api-access" element={<ApiAccess />} />
-          <Route path="/wallets" element={<Dashboard />} />
-          <Route path="/about" element={<Dashboard />} />
+          <Route path="/about" element={<AboutUs />} />
           <Route path="/accounts" element={<Dashboard />} />
-          <Route path="/settings" element={<Dashboard />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/contact" element={<Dashboard />} />
+          <Route path="/wallets" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

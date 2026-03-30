@@ -66,7 +66,7 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-8 gradient-mesh min-h-full relative">
+      <div className="p-4 sm:p-8 gradient-mesh min-h-full relative">
         {/* Background decorative lines */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
           <svg className="w-full h-full" viewBox="0 0 1000 800" fill="none">
@@ -77,11 +77,11 @@ const Dashboard = () => {
 
         <div className="relative z-10">
           {/* Services Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 mb-6 sm:mb-10 items-stretch">
             {/* User Services */}
             <div className="cyber-card h-full flex flex-col">
-              <h3 className="text-lg font-semibold text-center mb-6">User Services</h3>
-              <div className="flex-1 flex flex-col justify-center space-y-3">
+              <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">User Services</h3>
+              <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3">
                 {userServices.map((service) => (
                   <Link key={service.path} to={service.path}>
                     <Button variant="outline" className="w-full justify-center">
@@ -94,8 +94,8 @@ const Dashboard = () => {
 
             {/* Dev Services */}
             <div className="cyber-card h-full flex flex-col">
-              <h3 className="text-lg font-semibold text-center mb-6">Dev Services</h3>
-              <div className="flex-1 flex flex-col justify-center space-y-3">
+              <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">Dev Services</h3>
+              <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3">
                 {devServices.map((service) => (
                   <Link key={service.path} to={service.path}>
                     <Button variant="outline" className="w-full justify-center">
@@ -108,11 +108,11 @@ const Dashboard = () => {
 
             {/* Your Limits */}
             <div className="cyber-card h-full flex flex-col">
-              <h3 className="text-lg font-semibold text-center mb-6">Your Limits</h3>
-              <div className="flex-1 flex flex-col justify-center space-y-4">
+              <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">Your Limits</h3>
+              <div className="flex-1 flex flex-col justify-center space-y-3 sm:space-y-4">
                 {limits.map((limit) => (
                   <div key={limit.label} className="py-2">
-                    <div className="flex justify-between text-sm mb-1">
+                    <div className="flex justify-between text-xs sm:text-sm mb-1">
                       <span className="text-muted-foreground">{limit.label}</span>
                       <span className="font-medium">{limit.value.toLocaleString()}</span>
                     </div>
@@ -125,25 +125,25 @@ const Dashboard = () => {
 
           {/* Recent Checked URLs */}
           <div className="cyber-card">
-            <h3 className="text-lg font-semibold mb-6">Recent Checked URLs</h3>
+            <h3 className="text-lg font-semibold mb-4 sm:mb-6">Recent Checked URLs</h3>
             {recentLoading ? (
-              <p className="text-sm text-muted-foreground">Loading…</p>
+              <p className="text-sm sm:text-sm text-muted-foreground">Loading…</p>
             ) : recentError ? (
-              <p className="text-sm text-destructive">{recentError}</p>
+              <p className="text-xs sm:text-sm text-destructive">{recentError}</p>
             ) : recentUrls.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No scanned URLs yet.</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">No scanned URLs yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {recentUrls.map((item, index) => (
                   <div
                     key={`${item.url}-${index}`}
-                    className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg min-h-12"
+                    className="flex items-center justify-between p-3 sm:p-4 bg-secondary/50 rounded-lg min-h-10 sm:min-h-12"
                   >
-                    <span className="text-sm text-muted-foreground truncate flex-1 mr-4">
+                    <span className="text-xs sm:text-sm text-muted-foreground truncate flex-1 mr-3">
                       {item.url}
                     </span>
                     <span
-                      className="px-4 py-1 rounded-full text-sm font-medium tabular-nums shrink-0"
+                      className="px-3 py-0.5 rounded-full text-xs sm:text-sm font-medium tabular-nums shrink-0"
                       style={scoreBadgeStyle(item.score)}
                     >
                       {item.score}

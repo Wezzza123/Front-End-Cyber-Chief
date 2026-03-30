@@ -20,7 +20,7 @@ const Index = () => {
         <nav className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="w-8 h-8 text-primary" />
-            <span className="text-xl font-bold">CYBER BRIEF</span>
+            <span className="text-xl font-bold">CYBER SHIELD</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/login">
@@ -78,7 +78,7 @@ const Index = () => {
               Ready to Secure Your Digital Life?
             </h2>
             <p className="text-muted-foreground mb-8">
-              Join thousands of users who trust Cyber Brief for their cybersecurity needs.
+              Join thousands of users who trust CyberShield for their cybersecurity needs.
             </p>
             <Link to="/signup">
               <Button variant="cyber" size="xl">
@@ -92,7 +92,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-6 text-center text-muted-foreground">
-          <p>© 2024 Cyber Brief. All rights reserved.</p>
+          <p>© 2024 CyberShield. All rights reserved.</p>
         </div>
       </footer>
     </div>

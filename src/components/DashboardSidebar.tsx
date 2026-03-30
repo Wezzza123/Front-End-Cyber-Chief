@@ -1,22 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import { 
   LayoutDashboard, 
   Key, 
-  Wallet, 
   Info, 
   Users, 
   Settings, 
   Phone,
-  Mail,
-  Bell,
   LogOut
 } from "lucide-react";
 
-const menuItems = [
+const menuItems: Array<{ icon: any; label: string; path: string; badge?: string }> = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Key, label: "API Access", path: "/api-access" },
-  { icon: Wallet, label: "Wallets", path: "/wallets" },
-  { icon: Info, label: "About Us", path: "/about" },
+  { icon: Info, label: "About Us", path: "/about", badge: "About" },
   { icon: Users, label: "Accounts", path: "/accounts" },
   { icon: Settings, label: "Settings", path: "/settings" },
   { icon: Phone, label: "Contact Us", path: "/contact" },
@@ -37,15 +34,6 @@ const DashboardSidebar = () => {
               </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button className="p-2 rounded-md hover:bg-sidebar-accent transition-colors" title="Messages">
-              <Mail className="w-4 h-4 text-sidebar-foreground" />
-            </button>
-            <button className="p-2 rounded-md hover:bg-sidebar-accent transition-colors" title="Notifications">
-              <Bell className="w-4 h-4 text-sidebar-foreground" />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -65,7 +53,17 @@ const DashboardSidebar = () => {
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
-                  <span>{item.label}</span>
+                  <span className="flex items-center gap-2">
+                    <span>{item.label}</span>
+                    {item.badge ? (
+                      <Badge
+                        variant="secondary"
+                        className="px-2 py-0.5 text-[10px] h-auto leading-none whitespace-nowrap"
+                      >
+                        {item.badge}
+                      </Badge>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             );
