@@ -185,6 +185,7 @@ const SubmitUrl = () => {
   );
 
   const handleSubmit = async () => {
+    console.log("SubmitUrl.handleSubmit", { url, tokenPresent: Boolean(localStorage.getItem("auth_token")) });
     const t = localStorage.getItem("auth_token");
     if (!t) {
       navigate("/login");

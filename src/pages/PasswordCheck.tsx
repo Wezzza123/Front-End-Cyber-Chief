@@ -75,7 +75,12 @@ const PasswordCheck = () => {
             </Button>
           </div>
 
-          {result && (
+          {result && (result.isPwned === false && (result.pwnedCount ?? 0) === 0) ? (
+            <div className="cyber-card-white p-6 text-center animate-slide-in">
+              <p className="text-lg font-semibold">No exposures found — this password appears safe.</p>
+              <p className="text-sm text-muted-foreground">It was not found in known breaches.</p>
+            </div>
+          ) : result ? (
             <div className="cyber-card-white space-y-6 animate-slide-in">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -123,7 +128,7 @@ const PasswordCheck = () => {
                 ) : null}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </DashboardLayout>
