@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { Eye, EyeOff, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { toast } from "@/hooks/use-toast";
-import { register } from "@/lib/api";
+import { register, googleLogin } from "@/lib/api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -14,6 +15,44 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+
+  const extractApiMessage = (data: unknown): string | undefined => {
+    if (!data || typeof data !== "object") return undefined;
+    const payload = data as Record<string, unknown>;
+    const raw = payload.message ?? payload.Message;
+    return typeof raw === "string" ? raw : undefined;
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    try {
+      if (!credentialResponse.credential) {
+        throw new Error("No credential received from Google");
+      }
+      const res = await googleLogin(credentialResponse.credential);
+      const message = extractApiMessage(res?.data);
+
+      if (!res?.ok) {
+        toast({ title: "Google Login failed", description: message || "Failed to authenticate with Google", variant: "destructive" });
+        return;
+      }
+
+      const token = res?.data?.token || null;
+      if (!token) {
+        toast({ title: "Google Login failed", description: message || "Invalid token received", variant: "destructive" });
+        return;
+      }
+
+      localStorage.setItem("auth_token", token);
+      toast({ title: "Success", description: message || "Logged in with Google" });
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast({ title: "Google Login failed", description: err?.message || "Invalid credentials", variant: "destructive" });
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast({ title: "Google Login failed", description: "Could not authenticate with Google", variant: "destructive" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     console.log("Signup.handleSubmit", { firstName, lastName, email });
@@ -158,25 +197,14 @@ const Signup = () => {
             </div>
 
             {/* Social Login */}
-            <div className="flex justify-center gap-4">
-              <button
-                type="button"
-                className="w-14 h-14 bg-white rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
-              >
-                <span className="text-2xl">f</span>
-              </button>
-              <button
-                type="button"
-                className="w-14 h-14 bg-white rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
-              >
-                <span className="text-2xl text-red-500">G</span>
-              </button>
-              <button
-                type="button"
-                className="w-14 h-14 bg-white rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
-              >
-                <span className="text-2xl"></span>
-              </button>
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                type="icon"
+                shape="circle"
+                theme="filled_black"
+              />
             </div>
 
             {/* Login Link */}

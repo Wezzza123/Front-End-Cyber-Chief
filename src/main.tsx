@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import App from "./App.tsx";
 import "./index.css";
 
@@ -16,4 +17,8 @@ if (typeof window !== "undefined") {
   }
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <GoogleOAuthProvider clientId="177183766555-huk7f4cc7hfnkd1bhduub49toh0qvg5i.apps.googleusercontent.com">
+    <App />
+  </GoogleOAuthProvider>
+);

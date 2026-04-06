@@ -48,6 +48,10 @@ export async function login(email: string, password: string) {
   return post("/api/Auth/login", { email, password });
 }
 
+export async function googleLogin(idToken: string) {
+  return post("/api/auth/google-login", { idToken });
+}
+
 export async function forgotPassword(email: string) {
   return post("/api/Auth/forgot-password", { email });
 }
@@ -509,6 +513,7 @@ export const API = {
   dashboardAllScannedUrls,
   register,
   login,
+  googleLogin,
   forgotPassword,
   resetPassword,
   confirmEmail,

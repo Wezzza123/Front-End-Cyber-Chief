@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { Mail, Lock, Eye, EyeOff, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { toast } from "@/hooks/use-toast";
-import { confirmEmail, login } from "@/lib/api";
+import { confirmEmail, login, googleLogin } from "@/lib/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -72,6 +73,37 @@ const Login = () => {
     const value = e.target.value;
     setEmail(value);
     setIsEmailValid(validateEmail(value));
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    try {
+      if (!credentialResponse.credential) {
+        throw new Error("No credential received from Google");
+      }
+      const res = await googleLogin(credentialResponse.credential);
+      const message = extractApiMessage(res?.data);
+
+      if (!res?.ok) {
+        toast({ title: "Google Login failed", description: message || "Failed to authenticate with Google", variant: "destructive" });
+        return;
+      }
+
+      const token = res?.data?.token || null;
+      if (!token) {
+        toast({ title: "Google Login failed", description: message || "Invalid token received", variant: "destructive" });
+        return;
+      }
+
+      localStorage.setItem("auth_token", token);
+      toast({ title: "Success", description: message || "Logged in with Google" });
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast({ title: "Google Login failed", description: err?.message || "Invalid credentials", variant: "destructive" });
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast({ title: "Google Login failed", description: "Could not authenticate with Google", variant: "destructive" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,6 +210,24 @@ const Login = () => {
             <Button type="submit" variant="cyber-white" size="lg" className="w-full">
               Log in
             </Button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 py-2">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-muted-foreground text-sm">Or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            {/* Google Login */}
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                type="icon"
+                shape="circle"
+                theme="filled_black"
+              />
+            </div>
           </form>
         </div>
       </div>

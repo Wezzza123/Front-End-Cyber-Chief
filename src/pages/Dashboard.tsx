@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { dashboardAllScannedUrls, type DashboardScannedUrlItem } from "@/lib/api";
 
 const userServices = [
@@ -16,14 +15,6 @@ const devServices = [
   { label: "Scan Your Container", path: "/scan-container" },
   { label: "Scan Your Website", path: "/scan-website" },
   { label: "Scan Your File", path: "/file-upload" },
-];
-
-const limits = [
-  { label: "Food and Drinks", value: 900.780, progress: 90 },
-  { label: "Shopping", value: 796.668, progress: 80 },
-  { label: "Transportation", value: 865.009, progress: 85 },
-  { label: "Housing", value: 466.757, progress: 47 },
-  { label: "Vehicle", value: 786.779, progress: 79 },
 ];
 
 /** Score 1 → green, 10 → red (linear hue). Values outside 1–10 are clamped. */
@@ -77,13 +68,14 @@ const Dashboard = () => {
 
         <div className="relative z-10">
           {/* Services Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 mb-6 sm:mb-10 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 items-stretch">
             {/* User Services */}
-            <div className="cyber-card h-full flex flex-col">
-              <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">User Services</h3>
-              <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3">
+            <div className="cyber-card h-full flex flex-col p-6 sm:p-8 hover:shadow-xl transition-all duration-500 border border-primary/10 hover:border-primary/40 group relative overflow-hidden bg-gradient-to-b from-card to-card/50">
+              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" />
+              <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 tracking-tight text-foreground/90 group-hover:text-primary transition-colors relative z-10">User Services</h3>
+              <div className="flex-1 flex flex-col justify-center space-y-3 sm:space-y-4 relative z-10 min-h-[180px]">
                 {userServices.map((service) => (
-                  <Button key={service.path} asChild variant="outline" className="w-full justify-center">
+                  <Button key={service.path} asChild variant="outline" className="w-full justify-center h-12 sm:h-14 text-sm sm:text-base font-medium tracking-wide hover:bg-primary/10 transition-all duration-300 border-primary/20 hover:border-primary/50 shadow-sm hover:shadow-md hover:-translate-y-0.5">
                     <Link to={service.path}>{service.label}</Link>
                   </Button>
                 ))}
@@ -91,32 +83,17 @@ const Dashboard = () => {
             </div> 
 
             {/* Dev Services */}
-            <div className="cyber-card h-full flex flex-col">
-              <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">Dev Services</h3>
-              <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3">
+            <div className="cyber-card h-full flex flex-col p-6 sm:p-8 hover:shadow-xl transition-all duration-500 border border-primary/10 hover:border-primary/40 group relative overflow-hidden bg-gradient-to-b from-card to-card/50">
+              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" />
+              <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 tracking-tight text-foreground/90 group-hover:text-primary transition-colors relative z-10">Dev Services</h3>
+              <div className="flex-1 flex flex-col justify-center space-y-3 sm:space-y-4 relative z-10 min-h-[180px]">
                 {devServices.map((service) => (
-                  <Button key={service.path} asChild variant="outline" className="w-full justify-center">
+                  <Button key={service.path} asChild variant="outline" className="w-full justify-center h-12 sm:h-14 text-sm sm:text-base font-medium tracking-wide hover:bg-primary/10 transition-all duration-300 border-primary/20 hover:border-primary/50 shadow-sm hover:shadow-md hover:-translate-y-0.5">
                     <Link to={service.path}>{service.label}</Link>
                   </Button>
                 ))}
               </div>
             </div>  
-
-            {/* Your Limits */}
-            <div className="cyber-card h-full flex flex-col">
-              <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">Your Limits</h3>
-              <div className="flex-1 flex flex-col justify-center space-y-3 sm:space-y-4">
-                {limits.map((limit) => (
-                  <div key={limit.label} className="py-2">
-                    <div className="flex justify-between text-xs sm:text-sm mb-1">
-                      <span className="text-muted-foreground">{limit.label}</span>
-                      <span className="font-medium">{limit.value.toLocaleString()}</span>
-                    </div>
-                    <Progress value={limit.progress} className="h-2" />
-                  </div>
-                ))}
-              </div>
-            </div> 
           </div>
 
           {/* Recent Checked URLs */}
