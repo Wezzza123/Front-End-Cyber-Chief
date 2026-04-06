@@ -17,6 +17,13 @@ const Login = () => {
   const userId = searchParams.get("userId");
   const token = searchParams.get("token");
 
+  const extractApiMessage = (data: unknown): string | undefined => {
+    if (!data || typeof data !== "object") return undefined;
+    const payload = data as Record<string, unknown>;
+    const raw = payload.message ?? payload.Message;
+    return typeof raw === "string" ? raw : undefined;
+  };
+
   useEffect(() => {
     if (!userId || !token) return;
 
@@ -81,7 +88,16 @@ const Login = () => {
     try {
       const res = await login(email, password);
 
-      const message = res?.data?.message;
+      const message = extractApiMessage(res?.data);
+
+      if (message?.toLowerCase().includes("confirm your email")) {
+        toast({
+          title: "Email confirmation required",
+          description: message,
+          variant: "destructive",
+        });
+        return;
+      }
 
       // If API responded but not ok, show message
       if (!res?.ok) {

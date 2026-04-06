@@ -23,12 +23,12 @@ const Index = () => {
             <span className="text-xl font-bold">CYBER SHIELD</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link to="/signup">
-              <Button variant="cyber">Get Started</Button>
-            </Link>
+            <Button asChild variant="ghost">
+              <Link to="/login">Login</Link>
+            </Button>
+            <Button asChild variant="cyber">
+              <Link to="/signup">Get Started</Link>
+            </Button>
           </div>
         </nav>
       </header>
@@ -43,11 +43,9 @@ const Index = () => {
               analyze files, and protect your digital presence.
             </p>
             <div className="flex items-center justify-center">
-              <Link to="/login">
-                <Button variant="outline" size="xl">
-                  View Dash Board
-                </Button>
-              </Link>
+              <Button asChild variant="outline" size="xl">
+                <Link to="/login">View Dash Board</Link>
+              </Button>
             </div>
           </div> 
         </section>
@@ -80,11 +78,9 @@ const Index = () => {
             <p className="text-muted-foreground mb-8">
               Join thousands of users who trust CyberShield for their cybersecurity needs.
             </p>
-            <Link to="/signup">
-              <Button variant="cyber" size="xl">
-                Create Free Account
-              </Button>
-            </Link>
+            <Button asChild variant="cyber" size="xl">
+              <Link to="/signup">Create Free Account</Link>
+            </Button>
           </div>
         </section>
       </main>

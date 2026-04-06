@@ -83,11 +83,9 @@ const Dashboard = () => {
               <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">User Services</h3>
               <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3">
                 {userServices.map((service) => (
-                  <Link key={service.path} to={service.path}>
-                    <Button variant="outline" className="w-full justify-center">
-                      {service.label}
-                    </Button>
-                  </Link>
+                  <Button key={service.path} asChild variant="outline" className="w-full justify-center">
+                    <Link to={service.path}>{service.label}</Link>
+                  </Button>
                 ))}
               </div>
             </div> 
@@ -97,11 +95,9 @@ const Dashboard = () => {
               <h3 className="text-lg font-semibold text-center mb-4 sm:mb-6">Dev Services</h3>
               <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3">
                 {devServices.map((service) => (
-                  <Link key={service.path} to={service.path}>
-                    <Button variant="outline" className="w-full justify-center">
-                      {service.label}
-                    </Button>
-                  </Link>
+                  <Button key={service.path} asChild variant="outline" className="w-full justify-center">
+                    <Link to={service.path}>{service.label}</Link>
+                  </Button>
                 ))}
               </div>
             </div>  

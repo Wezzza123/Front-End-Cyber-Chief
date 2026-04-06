@@ -18,6 +18,8 @@ import ResetPassword from "./pages/ResetPassword";
 import AboutUs from "./pages/AboutUs";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import { Toaster } from "@/components/ui/toaster";
+import ConfirmEmail from "./pages/ConfirmEmail";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,7 @@ const App = () => (
           <Route path="/email-check" element={<EmailCheck />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/confirm-email" element={<ConfirmEmail />} />
           <Route path="/password-check" element={<PasswordCheck />} />
           <Route path="/file-upload" element={<FileUpload />} />
           <Route path="/scan-container" element={<ScanContainer />} />
@@ -47,6 +50,7 @@ const App = () => (
           <Route path="/wallets" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Toaster />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
