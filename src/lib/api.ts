@@ -1,5 +1,4 @@
 const BASE_URL = "https://api.cybershield.tecisfun.cloud";
-const AUTH_BASE_URL = "https://cybershield.tecisfun.cloud";
 
 export type DashboardScannedUrlItem = {
   url: string;
@@ -17,8 +16,8 @@ export async function dashboardAllScannedUrls(token?: string | null) {
     const raw = await res.json();
     data = Array.isArray(raw)
       ? (raw as DashboardScannedUrlItem[]).filter(
-          (row) => typeof row?.url === "string" && typeof row?.score === "number"
-        )
+        (row) => typeof row?.url === "string" && typeof row?.score === "number"
+      )
       : [];
   }
   return { status: res.status, ok: res.ok, data };
@@ -64,7 +63,7 @@ export type ConfirmEmailResponse = {
 
 /** GET /api/auth/confirm-email?userId=...&token=... (no auth header, no body) */
 export async function confirmEmail(userId: string, token: string) {
-  const url = `${AUTH_BASE_URL}/api/auth/confirm-email?userId=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}`;
+  const url = `${BASE_URL}/api/auth/confirm-email?userId=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}`;
   const headers: HeadersInit = { Accept: "*/*" };
   const res = await fetch(url, { method: "GET", headers });
   const contentType = res.headers.get("content-type") || "";
@@ -81,7 +80,7 @@ export type ValidateResetTokenResponse = {
 
 /** GET /api/auth/validate-reset-token?email=...&token=... (no auth header needed) */
 export async function validateResetToken(email: string, token: string) {
-  const url = `${AUTH_BASE_URL}/api/auth/validate-reset-token?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`;
+  const url = `${BASE_URL}/api/auth/validate-reset-token?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`;
   const headers: HeadersInit = { Accept: "*/*" };
   const res = await fetch(url, { method: "GET", headers });
   const contentType = res.headers.get("content-type") || "";
