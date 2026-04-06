@@ -75,6 +75,7 @@ const Login = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("Login.handleSubmit", { email });
     e.preventDefault();
     if (!isEmailValid || !password) {
       toast({

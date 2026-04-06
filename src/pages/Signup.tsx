@@ -16,6 +16,7 @@ const Signup = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("Signup.handleSubmit", { firstName, lastName, email });
     e.preventDefault();
     if (!firstName || !lastName || !email || !password) {
       toast({

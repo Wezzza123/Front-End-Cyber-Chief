@@ -102,7 +102,12 @@ const EmailCheck = () => {
             </div>
           )}
 
-          {results && (
+          {results && results.length === 0 ? (
+            <div className="cyber-card-white p-6 text-center animate-slide-in">
+              <p className="text-lg font-semibold">No matches found — this email appears safe.</p>
+              <p className="text-sm text-muted-foreground">No exposed passwords or hashes were found for this email.</p>
+            </div>
+          ) : results ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-in">
               {results.map((result, index) => (
                 <div key={index} className="cyber-card-white">
@@ -118,7 +123,7 @@ const EmailCheck = () => {
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </DashboardLayout>
