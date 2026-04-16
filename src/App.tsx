@@ -20,6 +20,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 import ConfirmEmail from "./pages/ConfirmEmail";
+import RecentUrls from "./pages/RecentUrls";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/recent-urls" element={<RecentUrls />} />
           <Route path="/url-shallow" element={<UrlShallowScan />} />
           <Route path="/url-deep" element={<SubmitUrl />} />
           <Route path="/email-check" element={<EmailCheck />} />

@@ -85,7 +85,7 @@ const Dashboard = () => {
             {/* Dev Services */}
             <div className="cyber-card h-full flex flex-col p-6 sm:p-8 hover:shadow-xl transition-all duration-500 border border-primary/10 hover:border-primary/40 group relative overflow-hidden bg-gradient-to-b from-card to-card/50">
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" />
-              <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 tracking-tight text-foreground/90 group-hover:text-primary transition-colors relative z-10">Dev Services</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 tracking-tight text-foreground/90 group-hover:text-primary transition-colors relative z-10">Developer Services</h3>
               <div className="flex-1 flex flex-col justify-center space-y-3 sm:space-y-4 relative z-10 min-h-[180px]">
                 {devServices.map((service) => (
                   <Button key={service.path} asChild variant="outline" className="w-full justify-center h-12 sm:h-14 text-sm sm:text-base font-medium tracking-wide hover:bg-primary/10 transition-all duration-300 border-primary/20 hover:border-primary/50 shadow-sm hover:shadow-md hover:-translate-y-0.5">
@@ -97,8 +97,15 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Checked URLs */}
-          <div className="cyber-card">
-            <h3 className="text-lg font-semibold mb-4 sm:mb-6">Recent Checked URLs</h3>
+          <div className="cyber-card flex flex-col">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h3 className="text-lg font-semibold border-b border-transparent">Recent Checked URLs</h3>
+              {recentUrls.length > 5 && (
+                <Button asChild variant="link" size="sm" className="text-primary hover:text-primary/80">
+                  <Link to="/recent-urls">View All</Link>
+                </Button>
+              )}
+            </div>
             {recentLoading ? (
               <p className="text-sm sm:text-sm text-muted-foreground">Loading…</p>
             ) : recentError ? (
@@ -107,7 +114,7 @@ const Dashboard = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">No scanned URLs yet.</p>
             ) : (
               <div className="space-y-2 sm:space-y-3">
-                {recentUrls.map((item, index) => (
+                {recentUrls.slice(0, 5).map((item, index) => (
                   <div
                     key={`${item.url}-${index}`}
                     className="flex items-center justify-between p-3 sm:p-4 bg-secondary/50 rounded-lg min-h-10 sm:min-h-12"
