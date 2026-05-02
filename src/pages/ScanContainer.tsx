@@ -35,6 +35,7 @@ const ScanContainer = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [imageInput, setImageInput] = useState("");
+  const [tagInput, setTagInput] = useState("");
   const [containerSubmitting, setContainerSubmitting] = useState(false);
   const [containerReport, setContainerReport] = useState<ImageSummary | null>(null);
   const [containerHistoryList, setContainerHistoryList] = useState<ContainerHistoryItem[]>([]);
@@ -163,6 +164,7 @@ const ScanContainer = () => {
       toast({ title: "Image required", description: "Enter an image name (e.g. myrepo/my-image).", variant: "destructive" });
       return;
     }
+    const tag = tagInput.trim() || null;
 
     clearContainerPoll();
     setContainerSubmitting(true);
@@ -170,7 +172,7 @@ const ScanContainer = () => {
     setContainerReport(null);
 
     try {
-      const res = await containerStartScan({ image: name }, t);
+      const res = await containerStartScan({ image: name, tag }, t);
       if (!res.ok || !res.data) {
         toast({ title: "Could not start container scan", description: `Error ${res.status}`, variant: "destructive" });
         return;
@@ -184,6 +186,7 @@ const ScanContainer = () => {
           toast({ title: "Analysis ready", description: "Detailed report opened." });
           await loadContainerHistory({ silent: true });
           setImageInput("");
+          setTagInput("");
           return;
         }
       }
@@ -217,7 +220,7 @@ const ScanContainer = () => {
               </p>
             </div>
 
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-3">
               <input
                 type="text"
                 placeholder="avre1/my-website"
@@ -237,6 +240,18 @@ const ScanContainer = () => {
               >
                 {containerSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
               </Button>
+            </div>
+            <div className="flex gap-2 mb-4 items-center">
+              <input
+                type="text"
+                placeholder="Tag (optional, e.g. latest)"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && void handleContainerSubmit()}
+                className="cyber-input-white w-64"
+                disabled={containerSubmitting}
+              />
+              <span className="text-xs text-muted-foreground">Leave blank to omit</span>
             </div>
 
             {containerPollHint && (
