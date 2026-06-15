@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { toast } from "@/hooks/use-toast";
 import { register, googleLogin } from "@/lib/api";
+import { setAuthToken } from "@/lib/auth";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const Signup = () => {
         return;
       }
 
-      localStorage.setItem("auth_token", token);
+      setAuthToken(token);
       toast({ title: "Success", description: message || "Logged in with Google" });
       navigate("/dashboard");
     } catch (err: any) {

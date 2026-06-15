@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { toast } from "@/hooks/use-toast";
 import { confirmEmail, login, googleLogin } from "@/lib/api";
+import { isAuthenticated, setAuthToken } from "@/lib/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,6 +18,13 @@ const Login = () => {
 
   const userId = searchParams.get("userId");
   const token = searchParams.get("token");
+
+  // Already logged in? Skip the login screen and go straight to the dashboard.
+  useEffect(() => {
+    if (!userId && !token && isAuthenticated()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate, token, userId]);
 
   const extractApiMessage = (data: unknown): string | undefined => {
     if (!data || typeof data !== "object") return undefined;
@@ -94,7 +102,7 @@ const Login = () => {
         return;
       }
 
-      localStorage.setItem("auth_token", token);
+      setAuthToken(token);
       toast({ title: "Success", description: message || "Logged in with Google" });
       navigate("/dashboard");
     } catch (err: any) {
@@ -144,7 +152,7 @@ const Login = () => {
         return;
       }
 
-      localStorage.setItem("auth_token", token);
+      setAuthToken(token);
       toast({ title: "Success", description: message || "Logged in" });
       navigate("/dashboard");
     } catch (err: any) {

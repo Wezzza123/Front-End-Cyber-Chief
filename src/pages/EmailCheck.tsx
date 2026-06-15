@@ -43,6 +43,16 @@ const EmailCheck = () => {
     try {
       setLoading(true);
       const res = await verifyAndCheck(email, otp);
+
+      // Backend returns 404 { message: "No data found." } when the breach
+      // lookup yields nothing. Treat that as a clean "no breaches found"
+      // outcome so the safe card renders instead of leaving the page blank.
+      if (res.status === 404) {
+        setResults([]);
+        toast({ title: "Done", description: "No breaches found for this email." });
+        return;
+      }
+
       if (!res.ok) {
         const msg = res?.data?.message || "Verification failed";
         toast({ title: "Error", description: msg, variant: "destructive" });

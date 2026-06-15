@@ -1,6 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { clearAuthToken } from "@/lib/auth";
 import { 
   LayoutDashboard, 
   Key, 
@@ -35,7 +36,13 @@ const decodeJwt = (token: string) => {
 
 const DashboardSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
+
+  const handleLogout = () => {
+    clearAuthToken();
+    navigate("/login", { replace: true });
+  };
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
@@ -107,13 +114,14 @@ const DashboardSidebar = () => {
 
       {/* Logout */}
       <div className="p-4 border-t border-sidebar-border">
-        <Link
-          to="/login"
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );

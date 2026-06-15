@@ -1,7 +1,9 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CyberLogo from "@/components/CyberLogo";
 import { Shield, Search, Mail, Lock, FileSearch, Code } from "lucide-react";
+import { isAuthenticated } from "@/lib/auth";
 
 const features = [
   { icon: Search, title: "URL Scanning", description: "Deep and shallow URL analysis for threats" },
@@ -13,6 +15,15 @@ const features = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  // Returning logged-in users skip the landing/login flow.
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
   return (
     <div className="min-h-screen bg-background gradient-mesh">
       {/* Hero Section */}
