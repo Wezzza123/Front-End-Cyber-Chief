@@ -207,12 +207,41 @@ export async function webScanStatus(target: string, token: string) {
   return { status: res.status, ok: res.ok, scanStatus: status, raw };
 }
 
-/** GET /api/WebScan/report?target=<url> — PDF blob */
-export async function webScanReport(target: string, token: string) {
-  const url = `${BASE_URL}/api/WebScan/report?target=${encodeURIComponent(target)}`;
+/** A single parsed web-scan finding (mirrors the container vulnerability shape). */
+export type WebFinding = {
+  source: string;
+  cve?: string | null;
+  issue: string;
+  severity: string;
+  endpoint?: string | null;
+  description?: string | null;
+  explanation?: string | null;
+  patch?: string | null;
+  referenceUrl?: string | null;
+};
+
+export type WebScanResult = {
+  scanId: string;
+  target: string;
+  status: string;
+  totalFindings: number;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  lowCount: number;
+  infoCount: number;
+  findings: WebFinding[];
+};
+
+/** GET /api/WebScan/result?target=<url> — structured JSON report */
+export async function webScanResult(target: string, token: string) {
+  const url = `${BASE_URL}/api/WebScan/result?target=${encodeURIComponent(target)}`;
   const res = await fetch(url, { headers: { ...authHeaders(token) } });
-  const blob = res.ok ? await res.blob() : null;
-  return { status: res.status, ok: res.ok, blob };
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? ((await res.json()) as WebScanResult)
+    : null;
+  return { status: res.status, ok: res.ok, data };
 }
 
 /** UrlExpander (shallow scan) — API shapes use PascalCase in JSON */
@@ -543,7 +572,7 @@ export const API = {
   webScanStart,
   webScanHistory,
   webScanStatus,
-  webScanReport,
+  webScanResult,
   urlExpanderExtract,
   urlExpanderMyHistory,
   triageSubmitUrl,
