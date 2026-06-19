@@ -16,6 +16,8 @@ import ApiAccess from "./pages/ApiAccess";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AboutUs from "./pages/AboutUs";
+import Accounts from "./pages/Accounts";
+import ContactUs from "./pages/ContactUs";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
@@ -44,9 +46,9 @@ const App = () => (
           <Route path="/scan-website" element={<ScanWebsite />} />
           <Route path="/api-access" element={<ApiAccess />} />
           <Route path="/about" element={<AboutUs />} />
-          <Route path="/accounts" element={<Dashboard />} />
+          <Route path="/accounts" element={<Accounts />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/contact" element={<Dashboard />} />
+          <Route path="/contact" element={<ContactUs />} />
           <Route path="/wallets" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
