@@ -2,13 +2,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Download, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ArrowRight, FileSearch, Loader2 } from "lucide-react";
 import {
   webScanHistory,
-  webScanReport,
+  webScanResult,
   webScanStart,
   webScanStatus,
+  type WebFinding,
   type WebScanHistoryItem,
+  type WebScanResult,
   type WebScanStartResponse,
 } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +32,24 @@ function isCompleted(status: string) {
   return status.toLowerCase() === "completed";
 }
 
+function severityClass(sev: string | undefined) {
+  const s = (sev || "").toLowerCase();
+  if (s === "critical") return "text-destructive";
+  if (s === "high") return "text-orange-600 dark:text-orange-400";
+  if (s === "medium") return "text-amber-700 dark:text-amber-400";
+  if (s === "low") return "text-blue-600 dark:text-blue-400";
+  return "text-muted-foreground";
+}
+
+function severityBadge(sev: string) {
+  const s = sev.toLowerCase();
+  if (s === "critical") return "bg-red-100 text-red-800";
+  if (s === "high") return "bg-orange-100 text-orange-800";
+  if (s === "medium") return "bg-amber-100 text-amber-800";
+  if (s === "low") return "bg-blue-100 text-blue-800";
+  return "bg-slate-100 text-slate-800";
+}
+
 const ScanWebsite = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,7 +57,11 @@ const ScanWebsite = () => {
   const [items, setItems] = useState<WebScanHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [downloadingTarget, setDownloadingTarget] = useState<string | null>(null);
+  const [openingTarget, setOpeningTarget] = useState<string | null>(null);
+  const [report, setReport] = useState<WebScanResult | null>(null);
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [hoverSegment, setHoverSegment] = useState<string | null>(null);
+  const [selectedFinding, setSelectedFinding] = useState<WebFinding | null>(null);
   const itemsRef = useRef(items);
   itemsRef.current = items;
 
@@ -149,7 +179,7 @@ const ScanWebsite = () => {
           description:
             apiMessage ??
             (cached
-              ? "This target was already scanned. You can download the report."
+              ? "This target was already scanned. You can open the report."
               : "The scan finished."),
         });
       } else {
@@ -180,30 +210,32 @@ const ScanWebsite = () => {
     }
   };
 
-  const handleDownloadReport = async (target: string) => {
+  const handleViewReport = async (target: string) => {
     const t = localStorage.getItem("auth_token");
     if (!t) {
       navigate("/login");
       return;
     }
-    setDownloadingTarget(target);
+    setOpeningTarget(target);
     try {
-      const res = await webScanReport(target, t);
-      if (!res.ok || !res.blob) {
+      const res = await webScanResult(target, t);
+      if (!res.ok || !res.data) {
         toast({
           title: "Report unavailable",
-          description: `Could not download report (${res.status}).`,
+          description: `Could not load report (${res.status}).`,
           variant: "destructive",
         });
         return;
       }
-      const safe = target.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 64);
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(res.blob);
-      a.download = `webscan-report-${safe}.pdf`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      toast({ title: "Report downloaded" });
+      if (!isCompleted(res.data.status)) {
+        toast({
+          title: "Scan not finished yet",
+          description: "The report will be available once the scan completes.",
+        });
+        return;
+      }
+      setSeverityFilter("all");
+      setReport(res.data);
     } catch (e: unknown) {
       toast({
         title: "Report unavailable",
@@ -211,9 +243,14 @@ const ScanWebsite = () => {
         variant: "destructive",
       });
     } finally {
-      setDownloadingTarget(null);
+      setOpeningTarget(null);
     }
   };
+
+  const filteredFindings = (report?.findings ?? []).filter((f) => {
+    if (severityFilter === "all") return true;
+    return (f.severity || "").toLowerCase() === severityFilter;
+  });
 
   if (!token) {
     return null;
@@ -228,7 +265,7 @@ const ScanWebsite = () => {
           <div className="mb-8 space-y-2">
             <p>
               <span className="text-primary font-medium">Full web assessment</span> on the URL you submit: history,
-              live status, and a PDF report when the scan completes. You must be signed in.
+              live status, and a detailed findings report when the scan completes. You must be signed in.
             </p>
           </div>
 
@@ -299,15 +336,15 @@ const ScanWebsite = () => {
                           variant="outline"
                           size="sm"
                           className="gap-1"
-                          onClick={() => void handleDownloadReport(row.target)}
-                          disabled={downloadingTarget === row.target}
+                          onClick={() => void handleViewReport(row.target)}
+                          disabled={openingTarget === row.target}
                         >
-                          {downloadingTarget === row.target ? (
+                          {openingTarget === row.target ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <Download className="w-4 h-4" />
+                            <FileSearch className="w-4 h-4" />
                           )}
-                          PDF
+                          View report
                         </Button>
                       )}
                     </div>
@@ -316,6 +353,227 @@ const ScanWebsite = () => {
               </ul>
             )}
           </div>
+
+          {/* ── Report dialog (mirrors the container summary) ── */}
+          <Dialog
+            open={Boolean(report)}
+            onOpenChange={(open) => {
+              if (!open) setReport(null);
+            }}
+          >
+            <DialogContent className="max-h-[80vh] w-full max-w-4xl overflow-auto p-4 sm:p-6 gap-4">
+              {report ? (
+                <>
+                  <DialogHeader className="text-left">
+                    <DialogTitle>Web Scan Report</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-1">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Target</p>
+                      <p className="font-medium break-all">{report.target}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {report.totalFindings} findings · status: {report.status}
+                      </p>
+                    </div>
+
+                    <div className="p-3 border rounded-lg bg-white flex flex-col sm:flex-row items-center gap-4">
+                      <div className="w-36 h-36 flex-shrink-0 mx-auto sm:mx-0 mb-2 sm:mb-0">
+                        {(() => {
+                          const segments = [
+                            { key: "critical", label: "Critical", value: report.criticalCount, color: "#ef4444" },
+                            { key: "high", label: "High", value: report.highCount, color: "#f97316" },
+                            { key: "medium", label: "Medium", value: report.mediumCount, color: "#fbbf24" },
+                            { key: "low", label: "Low", value: report.lowCount, color: "#3b82f6" },
+                            { key: "info", label: "Info", value: report.infoCount, color: "#94a3b8" },
+                          ];
+                          const total = segments.reduce((sum, s) => sum + s.value, 0);
+                          const radius = 48;
+                          const circumference = 2 * Math.PI * radius;
+                          let offset = 0;
+                          return (
+                            <svg viewBox="0 0 200 200" className="w-full h-full">
+                              <g transform="translate(100,100)">
+                                {segments.map((s) => {
+                                  const dash = total > 0 ? (s.value / total) * circumference : 0;
+                                  const dashArray = `${dash} ${circumference - dash}`;
+                                  const transform = `rotate(${(offset / circumference) * 360 - 90})`;
+                                  const isSelected = severityFilter === s.key;
+                                  const strokeW = isSelected ? 18 : 12;
+                                  const seg = (
+                                    <g key={s.key} transform={transform}>
+                                      <circle
+                                        r={radius}
+                                        cx={0}
+                                        cy={0}
+                                        fill="transparent"
+                                        stroke={s.color}
+                                        strokeWidth={strokeW}
+                                        strokeLinecap="butt"
+                                        strokeDasharray={dashArray}
+                                        style={{ cursor: "pointer", transition: "stroke-width 120ms" }}
+                                        onClick={() => setSeverityFilter(s.key)}
+                                        onMouseEnter={() => setHoverSegment(s.key)}
+                                        onMouseLeave={() => setHoverSegment(null)}
+                                      />
+                                    </g>
+                                  );
+                                  offset += dash;
+                                  return seg;
+                                })}
+                                <circle r={36} cx={0} cy={0} fill="white" />
+                                {(() => {
+                                  const active = hoverSegment ?? (severityFilter === "all" ? null : severityFilter);
+                                  const valueText = active
+                                    ? String(segments.find((s) => s.key === active)?.value ?? 0)
+                                    : String(total);
+                                  const labelText = active
+                                    ? segments.find((s) => s.key === active)?.label ?? ""
+                                    : "Total";
+                                  return (
+                                    <>
+                                      <text x={0} y={-4} textAnchor="middle" style={{ fontSize: "16px" }} className="font-semibold">
+                                        {valueText}
+                                      </text>
+                                      <text x={0} y={18} textAnchor="middle" className="text-[10px] text-muted-foreground">
+                                        {labelText}
+                                      </text>
+                                    </>
+                                  );
+                                })()}
+                              </g>
+                            </svg>
+                          );
+                        })()}
+                      </div>
+
+                      <div className="flex-1 flex flex-wrap gap-3 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> Critical: {report.criticalCount}</div>
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block" /> High: {report.highCount}</div>
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Medium: {report.mediumCount}</div>
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" /> Low: {report.lowCount}</div>
+                        <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" /> Info: {report.infoCount}</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <h3 className="text-sm font-semibold">Findings</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {[["all", "All"], ["critical", "Critical"], ["high", "High"], ["medium", "Medium"], ["low", "Low"], ["info", "Info"]].map(([key, label]) => (
+                            <button
+                              key={String(key)}
+                              onClick={() => setSeverityFilter(String(key))}
+                              className={`px-3 py-1 text-xs rounded ${severityFilter === String(key) ? "bg-primary text-white" : "bg-secondary/60"}`}
+                            >
+                              {String(label)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {filteredFindings.length === 0 ? (
+                        <p className="text-sm text-muted-foreground mt-4">No findings for this filter.</p>
+                      ) : (
+                        <div className="overflow-x-auto mt-4">
+                          <table className="w-full text-sm table-auto border-collapse">
+                            <thead>
+                              <tr className="text-left">
+                                <th className="p-2 border-b">Source</th>
+                                <th className="p-2 border-b">CVE / Issue</th>
+                                <th className="p-2 border-b">Severity</th>
+                                <th className="p-2 border-b">Endpoint</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredFindings.map((f, i) => (
+                                <tr
+                                  key={`${f.cve ?? f.issue}-${i}`}
+                                  className="align-top hover:bg-secondary/30 cursor-pointer"
+                                  onClick={() => setSelectedFinding(f)}
+                                >
+                                  <td className="p-3 border-b">{f.source}</td>
+                                  <td className="p-3 border-b">{f.cve ?? f.issue}</td>
+                                  <td className="p-3 border-b">
+                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${severityBadge(f.severity)}`}>
+                                      {f.severity}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 border-b break-all">{f.endpoint || "—"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </DialogContent>
+          </Dialog>
+
+          {/* ── Single finding detail ── */}
+          <Dialog
+            open={Boolean(selectedFinding)}
+            onOpenChange={(open) => {
+              if (!open) setSelectedFinding(null);
+            }}
+          >
+            <DialogContent className="max-h-[70vh] w-full max-w-xl overflow-auto p-6 gap-4">
+              {selectedFinding ? (
+                <>
+                  <DialogHeader className="text-left">
+                    <DialogTitle>{selectedFinding.cve ?? "Finding details"}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-1">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Issue</p>
+                      <p className="font-medium break-all">{selectedFinding.issue}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Severity</p>
+                      <p className={`font-semibold ${severityClass(selectedFinding.severity)}`}>{selectedFinding.severity}</p>
+                    </div>
+                    {selectedFinding.explanation ? (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Explanation</p>
+                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{selectedFinding.explanation}</p>
+                      </div>
+                    ) : null}
+                    {selectedFinding.patch ? (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Recommendation / Patch</p>
+                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{selectedFinding.patch}</p>
+                      </div>
+                    ) : null}
+                    {selectedFinding.endpoint ? (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Endpoint</p>
+                        <p className="text-sm break-all">{selectedFinding.endpoint}</p>
+                      </div>
+                    ) : null}
+                    <div>
+                      <p className="text-xs text-muted-foreground">Source</p>
+                      <p className="text-sm">{selectedFinding.source}</p>
+                    </div>
+                    {selectedFinding.referenceUrl ? (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Reference</p>
+                        <a
+                          href={selectedFinding.referenceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary underline break-all"
+                        >
+                          {selectedFinding.referenceUrl}
+                        </a>
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </DashboardLayout>
