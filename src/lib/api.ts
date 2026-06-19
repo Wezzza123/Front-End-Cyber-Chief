@@ -330,6 +330,27 @@ export async function triageSubmitUrl(targetUrl: string, token: string) {
   return { status: res.status, ok: res.ok, data };
 }
 
+/**
+ * POST /api/Triage/file — multipart upload, Bearer required.
+ * File scans are ephemeral: the backend does not persist them, so there is no
+ * history. Returns a sampleId to poll, same as the URL flow.
+ */
+export async function triageSubmitFile(file: File, token: string) {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  // NOTE: do not set Content-Type — the browser adds the multipart boundary.
+  const res = await fetch(`${BASE_URL}/api/Triage/file`, {
+    method: "POST",
+    headers: { ...authHeaders(token) },
+    body: form,
+  });
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? ((await res.json()) as TriageSubmitUrlResponse)
+    : null;
+  return { status: res.status, ok: res.ok, data };
+}
+
 /** GET /api/Triage/sample/{id} — no auth */
 export async function triageSampleStatus(sampleId: string) {
   const res = await fetch(`${BASE_URL}/api/Triage/sample/${encodeURIComponent(sampleId)}`);
@@ -526,6 +547,7 @@ export const API = {
   urlExpanderExtract,
   urlExpanderMyHistory,
   triageSubmitUrl,
+  triageSubmitFile,
   triageSampleStatus,
   triageSampleOverview,
   triageMyHistory,
